@@ -32,7 +32,7 @@ iblue.tools
 ```
 
 
-### 解析时间戳
+###解析时间戳
  
 ```javascript
     function date_format(time,format) 
@@ -67,7 +67,7 @@ iblue.tools
 ```
 
 
- ###解决iOS设备修改title不起作用的bug
+###解决iOS设备修改title不起作用的bug
  
 ```javascript
     function refresh_ios_title(_title){
