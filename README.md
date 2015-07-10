@@ -32,10 +32,9 @@ iblue.tools
 ```
 
 
-
-    ### 解析时间戳
+### 解析时间戳
  
-     ```javascript
+```javascript
     function date_format(time,format) 
     {
         format = format || 'yyyy-MM-dd';
@@ -68,8 +67,9 @@ iblue.tools
 ```
 
 
-   ###解决iOS设备修改title不起作用的bug
-   ```javascript
+ ###解决iOS设备修改title不起作用的bug
+ 
+```javascript
     function refresh_ios_title(_title){
       // if(!ua.is_idevice) return;
       //随便访问iframe访问一个网页，title就可以刷新了
