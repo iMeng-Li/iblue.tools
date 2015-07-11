@@ -1,5 +1,5 @@
 iblue.tools
-# 存储JavaScript的一些代码片段~~
+# 存储一些JavaScript代码片段~~
 ------------------------
 
 
@@ -86,9 +86,102 @@ iblue.tools
     }
 ```
 
+###检测更多的设备和浏览器信息，靠的是ua信息
+
+```javascript
+var ua = {};
+	var win = window;
+	var nav = win.navigator;
+	var app_version = nav.appVersion
+	
+	//手机系统
+	ua.is_android = (/android/gi).test(app_version)
+	ua.is_idevice = (/iphone|ipad|ipod/gi).test(app_version)
+	ua.is_touchpad = (/hp-tablet/gi).test(app_version)
+	ua.is_iphone = (/iphone/gi).test(app_version)
+	ua.is_ipad = (/ipad/gi).test(app_version)
+	ua.is_ipod = (/ipod/gi).test(app_version)
+	ua.is_mac = (/macintosh/gi).test(app_version)
+	
+	//高能设备,小米2、3，三星S3、S4等
+	ua.is_advanced_device = ua.is_idevice || (/windows|MI (2|3|4|5)|GT\-I9300/gi).test(app_version)|| ua.is_mac;
+
+	ua.other_phone = !(ua.is_android || ua.is_idevice)
+	
+
+	//浏览器品牌类型
+	ua.is_uc = (/uc/gi).test(app_version)
+	ua.is_chrome = (/CriOS|Chrome/gi).test(app_version)
+	ua.is_qq_browser = (/QQBrowser/gi).test(app_version)
+	ua.is_qq = (/ QQ\//gi).test(app_version)
+	ua.is_wechat = (/MicroMessenger/i).test(app_version)// || location.hostname=='m3.meijialove.com'
+	ua.is_real_safari = (/safari/gi).test(app_version) && !ua.is_chrome && !ua.is_qq_browser && !ua.is_wechat //真正的原生IOS safari浏览器
+	window.g_ua && $.extend(ua,window.g_ua);//附加ua识别，可以在index.html定义window.g_ua
 
 
+	//iphone safari是否全屏
+	ua.is_standalone = (window.navigator.standalone)? true : false
+	ua.is_iphone_safari_no_fullscreen = ua.is_idevice && !ua.is_ipad && ua.is_real_safari && !ua.is_standalone
+	
+	if(ua.is_iphone_nativeapp || ua.is_ipad_nativeapp){
+		ua.is_ios_nativeapp = true;
+		if(ua.is_ipad_nativeapp){
+			ua.is_ipad = true;
+		}
+	}
+	ua.is_ios = ua.is_iphone || ua.is_ipad;
+	ua.support_upload = true;
+	if(ua.is_wechat){
+		ua.channel='wechat';
+		var matches = app_version.match(/.*?(MicroMessenger\/([0-9.]+))\s*/);
+		if(matches && matches[2])ua.version = parseFloat(matches[2].replace(/(\d+)\.(\d+)\.(\d+)/,"$1.$2$3"));
+		//安卓微信5.2版之前不支持文件/图片上传
+		if(ua.version<5.2 && ua.is_android){
+			ua.support_upload = false;
+		}
+	}else if(ua.is_baidu_lightapp){
+		ua.channel='baidu_lightapp';
+	}else if(ua.is_qq){
+		ua.channel='qq';
+	}else if(ua.is_qq_browser){
+		ua.channel='qq_browser';
+	}else if(ua.is_chrome){
+		ua.channel='chrome_browser';
+	}else if(ua.is_real_safari){
+		ua.channel='safari_browser';
+	}else if(ua.is_uc){
+		ua.channel='uc_browser';
+	}else if(ua.is_iphone_nativeapp){
+		ua.channel='iphone_nativeapp';
+	}else if(ua.is_ipad_nativeapp){
+		ua.channel='ipad_nativeapp';
+	}else{
+		ua.channel='other';
+	}
+	ua.window_width = window.innerWidth
+	ua.window_height = window.innerHeight
 
+	//ua.window_height = $(window).height()
+	
+	//手机版本
+	if(ua.is_android)
+	{
+		var android_version = parseFloat(app_version.slice(app_version.indexOf("Android")+8)); 
+		ua.android_version = android_version
+	}
+	else if(ua.is_idevice)
+	{
+		var v = (app_version).match(/OS (\d+)_(\d+)_?(\d+)?/);
+		
+		var ios_version = v[1]
+		
+		if(v[2]) ios_version += '.'+v[2]
+		if(v[3]) ios_version += '.'+v[3]
+
+		ua.ios_version = ios_version
+	}
+
+```
 
 
 
