@@ -183,12 +183,52 @@ var ua = {};
 
 ```
 
+###巧用ontouchstart~~判断是否为移动端
 
+```javascript
+if ("ontouchstart" in document) {
+    var touchstart = "touchstart",
+        touchend = "touchend",
+        touchmove = "touchmove"
+} else {
+    var touchstart = "mousedown",
+        touchend = "mouseup",
+        touchmove = "mousemove"
+}
 
+```
 
+###orientationchange事件主要用于手机浏览器,作用于触发手机的横屏和竖屏之间的切换。我们可以根据这个事件,改变手机在横屏和竖屏的显示状态
 
+```javascript
+var warn = function() {
+        var lock = document.getElementById("lock");
+        return {
+            show: function() {
+                window.scroll(0, 0);
+                lock.style.display = "block"
+            },
+            hide: function() {
+                window.scroll(0, 0);
+                lock.style.display = "none"
+            }
+        }
+    }();
+    var need_watch = !("onorientationchange" in window);
+    if (!need_watch) {
+        window.addEventListener("orientationchange", function() {
+            if (window.orientation != 0) {
+                warn.show()
+            } else {
+                warn.hide()
+            }
+        }, false);
+        if (window.orientation != 0) {
+            warn.show()
+        }
+    }
 
-
+```
 
 
 
