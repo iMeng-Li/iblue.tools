@@ -230,15 +230,162 @@ var warn = function() {
 
 ```
 
+###本网站不支持IE浏览器
+```javascript
+var browserName = navigator.userAgent.toLowerCase();  
+    if(/msie/i.test(browserName) && !/opera/.test(browserName)){  
+       document.getElementById("font_page_reload").innerHTML='本网站不支持IE浏览器，请使用chrome等高级浏览器或者手机打开。<br /> <a href="http://www.miibeian.gov.cn/">粤ICP备14054382号-2</a>'
+    }
+```
 
 
+###检查对象是否为空  
+```javascript
+    exports.is_empty = function(check_obj) {
+        var obj_type = typeof(check_obj)
 
+        //console.log(obj_type)
+        switch (obj_type) {
+            case "undefined":
+                var is_empty = true
+                break
+            case "boolean":
+                var is_empty = check_obj
+                break
+            case "number":
+                if (check_obj > 0) {
+                    var is_empty = false
+                } else {
+                    var is_empty = true
+                }
+                break
+            case "string":
+                if (check_obj == "" || (check_obj <= "0" && !isNaN(parseInt(check_obj)))) {
+                    var is_empty = true
+                } else {
+                    var is_empty = false
+                }
+                break
+            case "object":
+                if (check_obj == null) {
+                    var is_empty = true
+                }
+                //数组
+                else if (check_obj instanceof Array) {
+                    if (check_obj.length == 0) {
+                        var is_empty = true
+                    } else {
+                        var is_empty = false
+                    }
+                } else {
+                    var is_empty = true
+                    for (var name in check_obj) {
+                        is_empty = false
+                    }
+                }
 
+                break
 
+            default:
+                var is_empty = false
+        }
 
+        return is_empty
+    }
 
+```
+### 通用交互异步请求处理
+### 使用iframe方式可以实现POST请求带上cookie
+```javascript
+    exports.send_request = function(options) {
+        var options = options || {}
+        var url = options.url || ""
+        var type = options.type || "GET"
+        var data = options.data || {}
+        var callback = options.callback || ""
+        var error = options.error || ""
+        if (options.rest_path) {
+            url = url.replace('{rest_path}', options.rest_path);
+        }
 
+        var merge_data = $.extend(data, {
+            t: parseInt(new Date().getTime())
+        })
+        merge_data = $.extend(merge_data, app_config.ajax_ext_data);
 
+        if (type == "POST" && options.post_way != 'ajax') { //使用iframe方式可以实现POST请求带上cookie
+            var temp_id = (Math.round(new Date().getTime()) + parseInt(100000 * Math.random()));
+            var iframe_id = 'post_iframe_agent_' + temp_id;
 
+            var style = 'border:0;width:0;height:0;display:none';
 
+            var temp = document.createElement("form");
+            $(temp).attr('style', style);
+            url = url.replace(/\.[^\.]+$/, '.iframe');
 
+            //为了跨域，设为一级域名
+            var old_domain = document.domain;
+            document.domain = document.domain.replace(/(.+\.){0,}([^\.]+\.[^\.]+)/, '$2');
+
+            temp.action = url;
+            temp.method = "post";
+            temp.target = iframe_id;
+            var callback_func = 'iframe_callback_' + temp_id;
+            window[callback_func] = function(data) {
+                callback(data)
+                    //还原域名
+                document.domain = old_domain;
+            }
+            data['_callback'] = 'parent.' + callback_func;
+            data['_domain'] = 'parent.' + document.domain;
+            for (var x in data) {
+                if ($.type(data[x]) == 'array') {
+                    $(data[x]).each(function(i, item) {
+                        var opt = document.createElement("textarea");
+                        opt.name = x + '[]';
+                        opt.value = item;
+                        temp.appendChild(opt);
+                    })
+                } else {
+                    var opt = document.createElement("textarea");
+                    opt.name = x;
+                    opt.value = data[x];
+                    temp.appendChild(opt);
+                }
+            }
+            document.body.appendChild(temp);
+
+            var rDiv = document.createElement('div');
+            $(rDiv).attr('style', style);
+            rDiv.innerHTML = "<iframe skip-hijack-check name='" + iframe_id + "' id='" + iframe_id + "' style='" + style + "'' mce_style='" + style + "'></iframe>";
+            document.body.appendChild(rDiv);
+            temp.submit();
+            return temp;
+        } else {
+            $.ajax({
+                type: type,
+                url: url,
+                data: merge_data,
+                dataType: "json",
+                timeout: app_config.ajax_timeout,
+                success: function(data) {
+                    if (typeof(callback) == "function") {
+                        callback.call(this, data)
+                    }
+                },
+                error: function() {
+                    new_alert_v2.show({
+                        text: "请求失败，请重试",
+                        type: "info",
+                        auto_close_time: 2000
+                    })
+
+                    if (typeof(error) == "function") {
+                        error.call(this)
+                    }
+                }
+            })
+        }
+    }
+
+```
